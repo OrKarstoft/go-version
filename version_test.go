@@ -51,6 +51,72 @@ func TestNewVersion(t *testing.T) {
 	}
 }
 
+func TestNewVersionWithPrefix(t *testing.T) {
+	t.Run("invalid becomes valid", func(t *testing.T) {
+		v, err := NewVersion("myprefix-1.2.3", WithPrefix("myprefix-"))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		expected, _ := NewVersion("1.2.3")
+		if !v.Equal(expected) {
+			t.Fatalf("expected version %s, got %s", expected, v)
+		}
+		if v.Original() != "myprefix-1.2.3" {
+			t.Fatalf("unexpected original string: %s", v.Original())
+		}
+	})
+
+	t.Run("with v prefix", func(t *testing.T) {
+		v, err := NewVersion("v1.2.3", WithPrefix("v"))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		expected, _ := NewVersion("1.2.3")
+		if !v.Equal(expected) {
+			t.Fatalf("expected version %s, got %s", expected, v)
+		}
+		if v.Original() != "v1.2.3" {
+			t.Fatalf("unexpected original string: %s", v.Original())
+		}
+	})
+
+	t.Run("prefix not present", func(t *testing.T) {
+		v, err := NewVersion("1.2.3", WithPrefix("v"))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		expected, _ := NewVersion("1.2.3")
+		if !v.Equal(expected) {
+			t.Fatalf("expected version %s, got %s", expected, v)
+		}
+		if v.Original() != "1.2.3" {
+			t.Fatalf("unexpected original string: %s", v.Original())
+		}
+	})
+
+	t.Run("invalid version remains invalid", func(t *testing.T) {
+		_, err := NewVersion("myprefix-foo", WithPrefix("myprefix-"))
+		if err == nil {
+			t.Fatalf("expected error, got nil")
+		}
+	})
+
+	t.Run("no options", func(t *testing.T) {
+		v, err := NewVersion("1.2.3")
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		expected, _ := NewVersion("1.2.3")
+		if !v.Equal(expected) {
+			t.Fatalf("expected version %s, got %s", expected, v)
+		}
+		if v.Original() != "1.2.3" {
+			t.Fatalf("unexpected original string: %s", v.Original())
+		}
+	})
+}
+
 func TestNewSemver(t *testing.T) {
 	cases := []struct {
 		version string
